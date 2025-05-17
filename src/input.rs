@@ -1,4 +1,4 @@
-use crate::modules::*;
+use crate::modules::{task::Task, *};
 pub struct Input {
     pub module: Module,
     pub command: Option<String>,
@@ -58,10 +58,10 @@ impl Input {
                 }
             },
             Module::Task => {
-                let mut task = Task::new();
+                let task = Task::new();
                 match command.as_deref() {
-                    Some("add") => task.add(),
-                    Some("done") => task.done(),
+                    Some("add") => task.add(argument),
+                    Some("done") => task.done(argument),
                     Some("list") => task.list(),
                     None => task.help(),
                     Some(other) => eprintln!("Invalid task command: {}", other),

@@ -1,49 +1,82 @@
-pub struct Task {
-    pub description: Option<String>,
-    pub tasks: Vec<String>,
-}
+use std::{fs, path::Path};
+use serde::{Serialize, Deserialize};
+
+const FILE_PATH: &str = "tasks.json";
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Task;
 
 impl Task {
     pub fn new() -> Self {
-        Self { description: None, tasks: Vec::new() }
+        Task
     }
-    pub fn add(&mut self) {
-        match &self.description {
+
+    fn read_tasks() -> Vec<String> {
+        if !Path::new(FILE_PATH).exists() {
+            return Vec::new();
+        }
+
+        let data = fs::read_to_string(FILE_PATH).unwrap_or_default();
+        serde_json::from_str(&data).unwrap_or_default()
+    }
+
+    fn write_tasks(tasks: &[String]) {
+        let data = serde_json::to_string_pretty(tasks).expect("Serialization failed");
+        fs::write(FILE_PATH, data).expect("Writing to file failed");
+    }
+
+    pub fn add(&self, description: Option<String>) {
+        match description {
             Some(task) => {
+                let mut tasks = Self::read_tasks();
+                if tasks.contains(&task) {
+                    println!("Task already exists: {}", task);
+                    return;
+                }
+
                 println!("Adding {} to task list...", task);
-                self.tasks.push(task.clone());
+                tasks.push(task);
+                Self::write_tasks(&tasks);
             },
             None => eprintln!("Task can't be empty!"),
         }
     }
 
     pub fn list(&self) {
-        if self.tasks.is_empty() {
-            println!("📭 No tasks yet.");
+        let tasks = Self::read_tasks();
+        if tasks.is_empty() {
+            println!("No tasks yet.");
             return;
         }
 
         println!("===== Task lists =====");
-        for (i, task) in self.tasks.iter().enumerate() {
+        for (i, task) in tasks.iter().enumerate() {
             println!("{}. {}", i + 1, task);
         }
         println!("=========================");
     }
 
-    pub fn done(&mut self) {
+    pub fn done(&self, index_str: Option<String>) {
         // self.description corresponds to task number in list!
-        match &self.description {
-            Some(index_str) => {
-                match index_str.parse::<usize>() {
-                    Ok(index) if index == 0 || index > self.tasks.len() => eprintln!("Invalid task number!"),
+        match index_str {
+            Some(s) => {
+                match s.parse::<usize>() {
                     Ok(index) => {
-                        self.tasks.swap_remove(index - 1);
+                        let mut tasks = Self::read_tasks();
+                        if index < 1 || index > tasks.len() {
+                            eprintln!("Invalid task number!");
+                            return;
+                        }
+
+                        tasks.remove(index - 1);
                         println!("Task {index} removed.");
+
+                        Self::write_tasks(&tasks);
                     },
                     Err(_) => eprintln!("Failed parsing input as a number.")
                 };
             },
-            None => eprintln!("Task can't be empty!"),
+            None => eprintln!("Task number not provided."),
         }
     }
 

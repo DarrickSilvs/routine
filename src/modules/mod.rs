@@ -4,7 +4,6 @@ pub mod weather;
 
 pub use spotify::Spotify;
 pub use weather::Weather;
-pub use task::Task;
 
 pub enum Module {
     Weather,
