@@ -36,6 +36,7 @@ impl Task {
 
                 println!("Adding {} to task list...", task);
                 tasks.push(task);
+                tasks.sort_by(|a, b| a.to_lowercase().cmp(&b.to_lowercase()));
                 Self::write_tasks(&tasks);
             },
             None => eprintln!("Task can't be empty!"),
@@ -43,11 +44,13 @@ impl Task {
     }
 
     pub fn list(&self) {
-        let tasks = Self::read_tasks();
+        let mut tasks = Self::read_tasks();
         if tasks.is_empty() {
             println!("No tasks yet.");
             return;
         }
+
+        tasks.sort_by(|a, b| a.to_lowercase().cmp(&b.to_lowercase()));
 
         println!("===== Task lists =====");
         for (i, task) in tasks.iter().enumerate() {
