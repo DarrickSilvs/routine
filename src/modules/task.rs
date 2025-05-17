@@ -83,10 +83,18 @@ impl Task {
         }
     }
 
+    pub fn clear(&self) {
+        let mut tasks = Self::read_tasks();
+        tasks.clear();
+        Self::write_tasks(&tasks);
+        println!("Task list cleared!");
+    }
+
     pub fn help(&self) {
         println!("===== Command Lists =====");
         println!("- add: task.add <TASK>");
         println!("- done: task.done <TASK_NUMBER>");
+        println!("- clear: task.clear");
         println!("- list: task.list");
         println!("=========================");
     }

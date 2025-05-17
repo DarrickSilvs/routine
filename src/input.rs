@@ -62,6 +62,7 @@ impl Input {
                 match command.as_deref() {
                     Some("add") => task.add(argument),
                     Some("done") => task.done(argument),
+                    Some("clear") => task.clear(),
                     Some("list") => task.list(),
                     None => task.help(),
                     Some(other) => eprintln!("Invalid task command: {}", other),
