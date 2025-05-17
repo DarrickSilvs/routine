@@ -1,22 +1,21 @@
 pub struct Weather {
-    pub command: Option<String>,
-    pub location: Option<String>,
+    pub city: Option<String>,
 }
 
 impl Weather {
-    pub fn new(command: Option<String>, location: Option<String>) -> Self {
-        Self { command, location }
+    pub fn new(city: Option<String>) -> Self {
+        Self { city }
     }
 
     pub fn now(&self) {
-        match &self.location {
+        match &self.city {
             Some(city) => println!("Weather in {} now...", city),
             None => println!("Weather currently..."),
         }
     }
 
     pub fn week(&self) {
-        match &self.location {
+        match &self.city {
             Some(city) => println!("Weather in {} this week...", city),
             None => println!("Weather this week..."),
         }

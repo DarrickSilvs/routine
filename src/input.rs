@@ -47,10 +47,10 @@ impl Input {
         let (command, argument) = (self.command.clone(), self.argument.clone());
         match self.module {
             Module::Spotify => {
-                let spotify = Spotify::new(command);
+                let spotify = Spotify::new(argument);
 
-                match spotify.command.as_deref() {
-                    Some("play") => spotify.play(argument.unwrap()),
+                match command.as_deref() {
+                    Some("play") => spotify.play(),
                     Some("next") => spotify.next(),
                     Some("previous") => spotify.previous(),
                     None => spotify.help(),
@@ -58,19 +58,19 @@ impl Input {
                 }
             },
             Module::Task => {
-                let task = Task::new(command);
-
-                match task.command.as_deref() {
-                    Some("add") => task.add(argument.unwrap()),
+                let mut task = Task::new();
+                match command.as_deref() {
+                    Some("add") => task.add(),
+                    Some("done") => task.done(),
                     Some("list") => task.list(),
                     None => task.help(),
                     Some(other) => eprintln!("Invalid task command: {}", other),
                 }
             },
             Module::Weather => {
-                let weather = Weather::new(command, argument );
+                let weather = Weather::new(argument );
 
-                match weather.command.as_deref() {
+                match command.as_deref() {
                     Some("now") => weather.now(),
                     Some("week") => weather.week(),
                     None => weather.help(),

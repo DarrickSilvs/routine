@@ -1,14 +1,17 @@
 pub struct Spotify {
-    pub command: Option<String>,
+    pub song: Option<String>,
 }
 
 impl Spotify {
-    pub fn new(command: Option<String>) -> Self {
-        Self { command }
+    pub fn new(song: Option<String>) -> Self {
+        Self { song }
     }
 
-    pub fn play(&self, song: String) {
-        println!("Playing {} on spotify...", song);
+    pub fn play(&self) {
+        match &self.song {
+            Some(song) => println!("Playing {} on spotify...", song),
+            None => eprintln!("Song can't be empty!"),
+        }
     }
 
     pub fn next(&self) {
