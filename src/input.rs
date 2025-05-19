@@ -7,7 +7,7 @@ pub struct Input {
 
 pub enum Terminate {
     Error(String),
-    Exit
+    Exit,
 }
 
 pub fn parse_commands(input: String) -> Result<Input, Terminate> {
@@ -43,7 +43,7 @@ pub fn parse_commands(input: String) -> Result<Input, Terminate> {
 }
 
 impl Input {
-    pub fn run(&self) {
+    pub async fn run(&self) -> Result<(), Box<dyn std::error::Error>> {
         let (command, argument) = (self.command.clone(), self.argument.clone());
         match self.module {
             Module::Spotify => {
@@ -72,12 +72,13 @@ impl Input {
                 let weather = Weather::new(argument );
 
                 match command.as_deref() {
-                    Some("now") => weather.now(),
+                    Some("now") => weather.now().await?,
                     Some("week") => weather.week(),
                     None => weather.help(),
                     Some(other) => eprintln!("Invalid weather command: {}", other)
                 }
             }
         };
+        Ok(())
     }
 }

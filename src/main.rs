@@ -1,11 +1,15 @@
 use std::io::{self, Write};
 use anyhow::{Context};
 use input::*;
+use dotenv::dotenv;
+use tokio;
 
 mod input;
 mod modules;
 
-fn main() {
+#[tokio::main]
+async fn main() {
+    dotenv().ok();
     loop {
         print!("> ");
         io::stdout().flush().unwrap();
@@ -24,6 +28,8 @@ fn main() {
             }
         };
 
-        args.run();
+       if let Err(e) = args.run().await {
+            eprintln!("Command failed: {}", e);
+        }
     }
 }
