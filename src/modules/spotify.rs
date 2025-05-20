@@ -24,9 +24,9 @@ impl Spotify {
 
     pub fn help(&self) {
         println!("===== Command Lists =====");
-        println!("- play: spotify.play <SONG>");
-        println!("- next: spotify.next");
-        println!("- previous: spotify.previous");
+        println!("- play: spotify-play <SONG>");
+        println!("- next: spotify-next");
+        println!("- previous: spotify-previous");
         println!("=========================");
     }
 }

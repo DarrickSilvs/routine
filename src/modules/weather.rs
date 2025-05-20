@@ -195,8 +195,8 @@ impl Weather {
 
     pub fn help(&self) {
         println!("===== Command Lists =====");
-        println!("- now: weather.now [LOCATION]");
-        println!("- week: weather.week [LOCATION]");
+        println!("- now: weather-now [CITY]");
+        println!("- week: weather-week [CITY]");
         println!("=========================");
     }
 }

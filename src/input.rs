@@ -27,7 +27,7 @@ pub fn parse_commands(input: String) -> Result<Input, Terminate> {
 
     let argument = parts.next().map(String::from);
 
-    let mut cmd_split = cmd_part.split(".");
+    let mut cmd_split = cmd_part.split("-");
 
     let module = cmd_split.next().unwrap();
     let module = match module {

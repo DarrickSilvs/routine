@@ -92,10 +92,10 @@ impl Task {
 
     pub fn help(&self) {
         println!("===== Command Lists =====");
-        println!("- add: task.add <TASK>");
-        println!("- done: task.done <TASK_NUMBER>");
-        println!("- clear: task.clear");
-        println!("- list: task.list");
+        println!("- add: task-add <TASK>");
+        println!("- done: task-done <TASK_NUMBER>");
+        println!("- clear: task-clear");
+        println!("- list: task-list");
         println!("=========================");
     }
 }
