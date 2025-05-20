@@ -33,6 +33,30 @@ struct Main {
 }
 
 #[derive(Deserialize, Debug)]
+struct ForecastResponse {
+    city: City,
+    list: Vec<ForecastDay>
+}
+
+#[derive(Deserialize, Debug)]
+struct City {
+    name: String,
+    country: String
+}
+
+#[derive(Deserialize, Debug)]
+struct ForecastDay {
+    temp: Temp,
+    weather: Vec<WeatherDescription>,
+}
+
+#[derive(Deserialize, Debug)]
+struct Temp {
+    min: f64,
+    max: f64
+}
+
+#[derive(Deserialize, Debug)]
 struct Geocoding {
     lat: f64,
     lon: f64
@@ -47,38 +71,7 @@ impl Weather {
         let api_key = env::var("OPENWEATHER_API_KEY")
             .map_err(|_| "OPENWEATHER_API_KEY has not been set!".to_string())?;
 
-        let (lat, lon) = match &self.city {
-            Some(city) => {
-                let geocoding_url = format!("http://api.openweathermap.org/geo/1.0/direct?q={}&limit=1&appid={}", city, api_key);
-                let resp = reqwest::get(geocoding_url)
-                    .await?
-                    .json::<Vec<Geocoding>>()
-                    .await?;
-
-                match resp.get(0) {
-                    Some(loc) => {
-                        let (lat, lon) = (
-                            loc.lat.clone().to_string(),
-                            loc.lon.clone().to_string()
-                        );
-                        (lat, lon)
-                    },
-                    None => return Err("No results found.".into())
-                }
-            },
-            None => {
-                let ip: IpAddr = reqwest::get("https://api.ipify.org")
-                    .await?
-                    .text()
-                    .await?
-                    .parse()
-                    .map_err(|_| "Failed to parse IP address".to_string())?;
-
-                let loc = geolocation::find(&ip.to_string())
-                    .map_err(|_| "Could not geolocate IP".to_string())?;
-                (loc.latitude, loc.longitude)
-            },
-        };
+        let (lat, lon) = self.get_loc(&self.city).await?;
 
         let api_url = format!(
             "https://api.openweathermap.org/data/2.5/weather?lat={}&lon={}&appid={}",
@@ -117,10 +110,86 @@ impl Weather {
         Ok(())
     }
 
-    pub fn week(&self) {
-        match &self.city {
-            Some(city) => println!("Weather in {} this week...", city),
-            None => println!("Weather this week..."),
+    pub async fn week(&self) -> Result<(), Box<dyn std::error::Error>> {
+        let api_key = env::var("OPENWEATHER_API_KEY")
+            .map_err(|_| "OPENWEATHER_API_KEY has not been set!".to_string())?;
+
+        let (lat, lon) = self.get_loc(&self.city).await?;
+
+        let api_url = format!(
+            "https://api.openweathermap.org/data/2.5/forecast/daily?lat={}&lon={}&cnt=7&appid={}",
+            lat, lon, api_key
+        );
+
+        let resp = reqwest::get(api_url)
+            .await?
+            .json::<ForecastResponse>()
+            .await?;
+
+        let city = &resp.city;
+
+        println!("7-day forecast at {}, {}:", city.name, city.country);
+
+        let to_c = |k: f64| k - 273.15;
+        for (day, info) in resp.list.iter().enumerate() {
+            let description = info.weather
+                .get(0)
+                .map(|w| w.description.clone())
+                .unwrap_or("N/A".to_string());
+
+            let day = day + 1;
+            let temp_min = to_c(info.temp.min);
+            let temp_max = to_c(info.temp.max);
+
+            println!("========== Day {} ==========", day);
+            println!("Weather     : {}", description);
+            println!("Temp min    : {:.1} °C", temp_min);
+            println!("Temp max    : {:.1} °C", temp_max);
+        }
+        println!("============================");
+        Ok(())
+    }
+
+    async fn get_loc(&self, city: &Option<String>) 
+        -> Result<(String, String), Box<dyn std::error::Error>> 
+    {
+        let api_key = env::var("OPENWEATHER_API_KEY")
+            .map_err(|_| "OPENWEATHER_API_KEY has not been set!".to_string())?;
+
+        match city {
+            Some(city) => {
+                let geocoding_url = format!(
+                    "http://api.openweathermap.org/geo/1.0/direct?q={}&limit=1&appid={}",
+                    city, api_key
+                );
+                let resp = reqwest::get(geocoding_url)
+                    .await?
+                    .json::<Vec<Geocoding>>()
+                    .await?;
+
+                match resp.get(0) {
+                    Some(loc) => {
+                        let (lat, lon) = (
+                            loc.lat.clone().to_string(),
+                            loc.lon.clone().to_string()
+                        );
+                        Ok((lat, lon))
+                    },
+                    None => return Err("No results found.".into())
+                }
+            },
+            None => {
+                let ip: IpAddr = reqwest::get("https://api.ipify.org")
+                    .await?
+                    .text()
+                    .await?
+                    .parse()
+                    .map_err(|_| "Failed to parse IP address".to_string())?;
+
+                let loc = geolocation::find(&ip.to_string())
+                    .map_err(|_| "Could not geolocate IP".to_string())?;
+                Ok((loc.latitude, loc.longitude))
+            }
         }
     }
 

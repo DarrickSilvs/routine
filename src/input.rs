@@ -73,7 +73,7 @@ impl Input {
 
                 match command.as_deref() {
                     Some("now") => weather.now().await?,
-                    Some("week") => weather.week(),
+                    Some("week") => weather.week().await?,
                     None => weather.help(),
                     Some(other) => eprintln!("Invalid weather command: {}", other)
                 }
